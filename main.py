@@ -22,7 +22,6 @@ def write_to_file(account_data):
 
 
 def get_old_accounts(option):
-	print(option)
 	tokens_file = Path('tokens_accounts.json')
 	if not tokens_file.is_file():
 		return print("ERROR: no such file", tokens_file)
@@ -35,13 +34,13 @@ def get_old_accounts(option):
 				post_text = input('Enter post text for account {}: '.format(token['email']))
 				publish_text_on_profile(token['token']['access_token'], post_text)
 			elif (option == 'content'):
+				print('Enter post content for -----{}-----: '.format(token['email']))
 				publish_content_on_profile(token['token']['access_token'])
 		else:
 			print(token['email'],"The token has exprired!")
 
 
 def get_new_accounts(option):
-	print(option)
 	accounts = json.load(open('accounts.json'))
 	access_url = get_url()
 	
@@ -55,6 +54,7 @@ def get_new_accounts(option):
 			post_text = input('Enter post text for account {}: '.format(account['email']))
 			publish_text_on_profile(token['access_token'], post_text)
 		elif (option == 'content'):
+			print('Enter post content for -----{}-----: '.format(account['email']))
 			publish_content_on_profile(token['access_token'])
 
 		account_data = {}
