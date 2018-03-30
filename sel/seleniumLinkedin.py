@@ -1,13 +1,14 @@
 from selenium import webdriver
+from .utils import wait_rand, wait_to_load, press_rand, login, load_linkedIn_links_from_file, driver
 
-options = webdriver.ChromeOptions()
-options.add_argument('headless')
+# options = webdriver.ChromeOptions()
+# options.add_argument('headless')
 
-# set the window size
-options.add_argument('window-size=1200x600')
+# # set the window size
+# options.add_argument('window-size=1200x600')
 
-# initialize the driver
-driver = webdriver.Chrome(chrome_options=options)
+# # initialize the driver
+# driver = webdriver.Chrome(chrome_options=options)
 
 def get_token_url(url, account):
 	driver.get(url)

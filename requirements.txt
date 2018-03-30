@@ -1,0 +1,10 @@
+#python linkedin api
+https://github.com/johnidm/PyLinkedinAPI
+
+
+#use of oauth2
+https://github.com/requests/requests-oauthlib/blob/master/docs/examples/linkedin.rst
+
+#chrome headless selenium
+https://intoli.com/blog/running-selenium-with-headless-chrome/
+

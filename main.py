@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-from oauth2Linkedin import get_url, get_token
-from seleniumLinkedin import get_token_url
-from postLinkedIn import publish_text_on_profile, spaces, publish_content_on_profile
 import json
 from pathlib import Path
 import time
 import datetime
+
+from oauth2Linkedin import get_url, get_token
+from postLinkedIn import publish_text_on_profile, spaces, publish_content_on_profile
+from sel.groupseleniumLinkedin import post_to_group
+from sel.seleniumLinkedin import get_token_url
+from sel.connectSeleniumLinkedin import connect
 
 
 def write_to_file(account_data):
@@ -75,6 +77,10 @@ while True:
 
         >>> 3 - Use NEW list of accounts post content
         >>> 4 - Use OLD list of accounts post content
+
+        >>> 5 - Post to a group
+
+        >>> 6 - Connect to accounts from xlx file
         '''
     )
 
@@ -85,6 +91,8 @@ while True:
         '2': get_old_accounts,
         '3': get_new_accounts,
         '4': get_old_accounts,
+        '5': post_to_group,
+        '6': connect,
     }
 
     if op not in func.keys():
@@ -93,8 +101,10 @@ while True:
     try:
         if op == '1' or op == '2':
             func[op]('text')
-        else:
+        elif op == '3' or op == '4':
             func[op]('content')
+        else:
+        	func[op]()
     except Exception as ex:
         spaces(2)
         print('Error: {}'.format(ex))
