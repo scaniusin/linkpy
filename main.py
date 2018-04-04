@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import time
 import datetime
+from sel.utils import log_file, driver
 
 from oauth2Linkedin import get_url, get_token
 from postLinkedIn import publish_text_on_profile, spaces, publish_content_on_profile
@@ -106,5 +107,7 @@ while True:
         else:
         	func[op]()
     except Exception as ex:
+        log_file("ERROR", format(ex))
+        driver.get_screenshot_as_file('img/ERROR.png')
         spaces(2)
         print('Error: {}'.format(ex))

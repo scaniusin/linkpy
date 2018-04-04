@@ -1,92 +1,80 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from .utils import *
+import json
 from random import *
-from openpyxl import Workbook, load_workbook
-from pathlib import Path
-from .utils import wait_rand, wait_to_load, press_rand, login, load_linkedIn_links_from_file, driver
 
-# options = webdriver.ChromeOptions()
-# options.add_argument('headless')
+LIMIT = randrange(30, 50) #to change
 
-# set the window size
-# options.add_argument('window-size=1200x600')
 
-# initialize the driver
-# driver = webdriver.Chrome(chrome_options=options)
-
-def log(account,status):
-	xlx_file = Path("accounts_status_to_zoho.xlsx")
-	#clean file before new import!?!?!?	
-
-	if not xlx_file.is_file():	
-		wb = Workbook()
-		ws = wb.active
-		ws = wb.create_sheet('accounts_to_zoho', 0)
-		wb.save(xlx_file)
+def send_connect(lead, account_email):	
+	if lead['link']:
+		driver.get(lead['link'])
+		log_file("load link", lead['link'])
+		wait_to_load()	
 	else:
-		wb = load_workbook(xlx_file)
-		ws = wb['accounts_to_zoho']
-		ws = wb.active
-
-	data = [account['id'], status]
-	ws.append(data)
-	wb.save(filename = xlx_file)
-
-
-def send_connect(account):	
-	driver.get(account['link'])
-	wait_to_load()
-	
+		return
+		
 	try:
 		available = driver.find_element_by_css_selector('div.profile-unavailable')	
-		log(account,'account deleted')
-		driver.get_screenshot_as_file('img/profile-unavailable-' + account['link'] + '.png')
+		log(lead, 'account deleted', account_email)
+		driver.get_screenshot_as_file('img/profile-unavailable-' + lead['link'] + '.png')
+		log_file("profile is unavailable", available)
 		return
 	except NoSuchElementException:
-		print("Handled ERROR: ", NoSuchElementException)
+		log_file("profile is available", NoSuchElementException)
 		pass
 	
 	try:
 		status = driver.find_element_by_css_selector('span.pv-s-profile-actions__label').text
+		log_file("check status", status)
 		driver.get_screenshot_as_file('img/1_add-new-connect.png')
 	except NoSuchElementException:
-		print("Handled ERROR: ", NoSuchElementException)
-		log(account,'account not found')
-		driver.get_screenshot_as_file('img/profile-unavailable-' + account['link'] + '.png')
+		log_file("no status element", NoSuchElementException)
+		log(lead,'account not found', account_email)
+		driver.get_screenshot_as_file('img/profile-unavailable-' + lead['link'] + '.png')
 		return
 
 	if status == "Connect":
 		button = driver.find_element_by_css_selector('button.pv-s-profile-actions--connect')
 		button.click()
-		log(account,'Sent')
+		log(lead, 'Sent', account_email)
 	elif status == "Message":
-		log(account,'Connected')
+		log(lead, 'Connected', account_email)
 		return
 	elif status == "InMail":
-		log(account,status)
+		log(lead, status, account_email)
 		return
 	elif status == "Pending":		
-		log(account,status)
+		log(lead, status, account_email)
 		return
 	else:
-		driver.get_screenshot_as_file('img/ERROR-' + account['link'] + '.png')
+		driver.get_screenshot_as_file('img/ERROR-' + lead['link'] + '.png')
 		return
 
 	name = driver.find_element_by_css_selector('h1.pv-top-card-section__name').text
 	text = "Hello " + name + ", can we connect on Linkedin?"
 
+	log_file("get profile name", name)
+
 	button = driver.find_element_by_css_selector('button.mr1')
 	button.click()
+
+	log_file("click button connect", button)
 
 	wait_rand()
 
 	textarea = driver.find_element_by_css_selector('textarea.send-invite__custom-message')
 	textarea.send_keys(text)
 
-	wait_rand()
+	log_file("fill textarea", textarea)
+
+	wait_to_load()
 
 	button = driver.find_element_by_css_selector('button.ml1')
 	button.click()
+
+	log_file("click button send", button)
 
 	wait_to_load()
 
@@ -96,22 +84,31 @@ def send_connect(account):
 
 
 def connect():
-	#not more than 40 for one session
+	log_file("\n\n START of Script Connection \n", None)
 	accounts = json.load(open('accounts.json'))
-
-	for account in accounts:
-		login(account['email'],account['password'])
-		leads = load_linkedIn_links_from_file()	
-		for lead in leads:
-			try:
-				send_connect(lead)
-			except ValueError:
-				print("Handled ERROR: ", ValueError)
-				driver.get_screenshot_as_file('img/error-' + lead['link'] + '.png')
-				continue	
+	portion = 0
 	
+	while(True):
+		for account in accounts:
+			log_file("random profiles to import", LIMIT)
+			log_file("number of portion to import", portion)
+			leads = load_linkedIn_links_from_file(account['file'], LIMIT, portion)
+			log_file("load leads", leads)
+			if leads:
+				log_file("login as", account['email'])
+				login(account['email'], account['password'])
+				for lead in leads:
+					try:
+						send_connect(lead, account['email'])
+					except ValueError:
+						log_file("Handled ERROR", ValueError)
+						driver.get_screenshot_as_file('img/error-' + lead['link'] + '.png')
+						continue
+				logout()
+			elif accounts.index(account) == len(accounts)-1:
+				log_file("SUCCESS", None)
+				return
+		portion+=1
+		log_file("waiting 5 min", None)
+		wait_in_min(5) #change
 	
-	print("SUCCESS!!")
-
-
-
