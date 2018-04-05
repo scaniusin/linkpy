@@ -85,11 +85,12 @@ def getId():
 try:
 	log_file("\n\n START of Script get ID \n", None)
 
-	login("aksennyaa@gmail.com", "openmenow15")
+	login("vitaly.boiko@dkv.global", "Zxcvbn*9631")
 
 	getId()
 
 	log_file("SUCCESS", None)
+	driver.quit()
 except Exception as ex:
     log_file("ERROR", format(ex))
     driver.get_screenshot_as_file('img/ERROR.png')
